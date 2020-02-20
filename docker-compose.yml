@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./docker/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    env_file:
+      - ./corona/postgres.env
+
+  django:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-local
+    ports:
+      - "8000:8000"
+    command: 
+      - bash
+      - -c
+      - |
+        /wait-for-it.sh db:5432 -t 10
+        python manage.py runserver 0:8000
+    volumes:
+      - ./:/app/
